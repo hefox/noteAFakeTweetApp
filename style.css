@@ -1,0 +1,26 @@
+#tweets, h2 {
+  margin: 0 auto;
+  width: 460px;
+  max-width: 100%;
+}
+
+.tweet {
+  border: 1px #B0B5AA solid;
+  margin: 5px;
+  padding: 5px;
+  border-radius: 5px;
+}
+.tweet .date-area,
+.tweet .date-area a,
+h2 {
+  color: #7F827C;
+}
+
+.tweet img {
+  float: left;
+  margin-right: 10px;
+}
+
+.tweet .date-area {
+  clear: both;
+}
