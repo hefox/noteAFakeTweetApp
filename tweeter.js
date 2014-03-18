@@ -45,28 +45,27 @@ Tweeter.prototype.fetch = function(offset, async, onTweetLoad) {
 Tweeter.prototype.registerVote = function(tweetId) {
   var xmlhttp = new XMLHttpRequest();
   var url = '/tweets/vote';
-  // @todo This should use post instead.
+  // @TODO: This should use post instead and have some user information.
   url += '?vote=' + tweetId;
   xmlhttp.open('GET', url);
   xmlhttp.send();
-  tweetId = 'tweet-' + tweetId;
+  tweetCssId = 'tweet-' + tweetId;
   this.votesCache = this.votesCache || {};
   this.votesCache[tweetId] = tweetId in this.votesCache ? this.votesCache[tweetId] + 1 : 1;
-
-  // We find the sibling that has the vote that is closets, but higher than current vote.
 
   // Not rendering for tests, so skip updating markup  in this case.
   if (!this.divId) {
     return;
   }
   var div = document.getElementById(this.divId);
-  var tweetElement = document.getElementById(tweetId);
+  var tweetElement = document.getElementById(tweetCssId);
+  // We find the sibling that has the vote that is closets, but higher than current vote.
   // Traverse intil finding the place.
   var previous = tweetElement
   var moveAfter, sameVote;
   // Keep going up till find an element with a higher vote.
   while (previous = previous.previousSibling) {
-    var prevID = previous.getAttribute('id');
+    var prevID = previous.getAttribute('id').substring(6);
     if (prevID in this.votesCache) {
       if (this.votesCache[prevID] > this.votesCache[tweetId]) {
         moveAfter = previous;
@@ -90,7 +89,8 @@ Tweeter.prototype.registerVote = function(tweetId) {
   else {
     div.insertBefore(tweetElement, div.firstChild);
   }
-  document.querySelector("#" + tweetId + " .vote-counter").innerHTML = this.votesCache[tweetId];
+  // Update vote counter to say how many votes currently are.
+  document.querySelector("#" + tweetCssId + " .vote-counter").innerHTML = this.votesCache[tweetId];
 }
 
 /**
@@ -155,23 +155,30 @@ Tweeter.prototype.sanitize = function(string, allowedTags) {
  *   ID of the div to render to.
  */
 Tweeter.prototype.render = function(id, offset) {
+  // Save current tweet object in variable for reuse in event handlers.
   var tweeterObject = this;
+  // Default offset to 0 if not passed.
   offset = offset || 0;
+  // Verify input to function.
   if (!id || typeof id != 'string') {
     throw('Invalid id given, either empty or not a string.');
   }
+  // Track what div was updated.
   this.divId = id;
   element = document.getElementById(id);
   if (!element) {
     throw('Unable to find element with id ' + id);
   }
-  this.votes = this.votes ? this.votes : {};
+  // Stores how many votes on this side as a cache, defaulted to returned data.
+  this.votesCache = this.votesCache ? this.votesCache : {};
+  // Add an handler that caches the async new results.
   this.fetch(offset, true, function(tweeterObject, tweets) {
     element = document.getElementById(id);
     var tweetId = '';
+    var output = '';
     for (i in tweets) {
       tweetId = tweeterObject.sanitize(tweets[i].uid, []);
-      element.innerHTML 
+      output
         += '<div class="tweet" id="tweet-' + tweetId + '">'
         + '<img src="images/' + tweeterObject.sanitize(tweets[i].userId, []) + '.gif">'
         + '<div class="tweet-text"> ' + tweeterObject.sanitize(tweets[i].tweet) + '</div>'
@@ -181,29 +188,36 @@ Tweeter.prototype.render = function(id, offset) {
         + '</div>'
         + '</div>';
       // Track votes for later use so don't have to refresh from server.
-      tweeterObject.votes[tweetId] = tweets[i].vote ? tweets[i].vote : 0;
+      tweeterObject.votesCache[tweetId] = tweets[i].vote ? tweets[i].vote : 0;
     }
-      // Attach the onclick behaviour.
-      document.querySelectorAll(".vote-link").onclick = function() {
+    // Addd the new tweets to output.
+    element.innerHTML += output;
+
+    // Attach on click event to update vote count on clicking.
+    var elements = document.querySelectorAll('a.vote-link');
+    for (var i in elements) {
+      elements[i].onclick = function() {
+        // Find the parent with the id.
         event = event || window.event;
         var target = event.target || event.srcElement;
         var parent = target.parentNode;
         while (parent.getAttribute('class') != 'tweet') {
           parent = parent.parentNode;
         }
-        console.log(parent.getAttribute('id').substring(6));
-        tweeterObject.registerVote(parent.getAttribute('id').substring(6))
+        // Remove tweet- from id and register vote.
+        tweeterObject.registerVote(parent.getAttribute('id').substring(6));
         return false;
       }
+    }
 
     // Update tweet listing on scroll.
     if (tweetId) {
       window.onscroll = function() {
-        element = document.getElementById(tweetId)
+        element = document.getElementById('tweet-' + tweetId)
         if (element) {
           // From http://stackoverflow.com/questions/704758/how-to-check-if-an-element-is-really-visible-with-javascript
           // Except changed to actually work.
-          // Next time would just use a framework :P.
+          // Next time would just use a framework likely.
           function visible(element) {
             if (element.offsetWidth === 0 || element.offsetHeight === 0) return false;
             var height = document.documentElement.clientHeight,
@@ -232,9 +246,8 @@ Tweeter.prototype.render = function(id, offset) {
     }
   })
 }
-// Global objects suck, this needs to be refectored later.
-var tweeters = new Tweeter();
 
 window.onload = function () {
+  var tweeters = new Tweeter();
   tweeters.render('tweets');
 }
