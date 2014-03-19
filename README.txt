@@ -8,9 +8,12 @@ json storage instead.
 All the tweets are generated via randomness. They will persist until local
 storage is cleared or the tests are run.
 
+The only library used is qunit. jQuery would be quite useful for cross browser
+and DOM manipulation but was not used as an additional challenge.
+
 Areas that could bw improved on with more time:
-1) animations!
-2) Store each tweet as a custom class with functions to get ID, etc.
+1) animationse
+2) Custom tweet object to have functions to retrieve selector, etc.
 3) support same tweet in two tweet listings (right now prevented due to id use)
 4) Add sorting.
 

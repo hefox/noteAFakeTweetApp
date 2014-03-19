@@ -7,6 +7,9 @@ var Tweeter = function () {}
 /**
  * Fetch some tweets!
  *
+ * Note if there was doing this and new tweets were being generated, would need
+ * more information to find older/lower ranked tweets without duplicating.
+ *
  * @param offset
  *   Where to start fetching tweets from (for paging).
  * @param async
@@ -45,10 +48,12 @@ Tweeter.prototype.fetch = function(offset, async, onTweetLoad) {
 Tweeter.prototype.registerVote = function(tweetId) {
   var xmlhttp = new XMLHttpRequest();
   var url = '/tweets/vote';
-  // @TODO: This should use post instead and have some user information.
+  // This should use post instead and have some user information.
   url += '?vote=' + tweetId;
   xmlhttp.open('GET', url);
   xmlhttp.send();
+  // We don't bother refetching but instead mock that the data was sent
+  // so it's more performant.
   tweetCssId = 'tweet-' + tweetId;
   this.votesCache = this.votesCache || {};
   this.votesCache[tweetId] = tweetId in this.votesCache ? this.votesCache[tweetId] + 1 : 1;
@@ -59,11 +64,12 @@ Tweeter.prototype.registerVote = function(tweetId) {
   }
   var div = document.getElementById(this.divId);
   var tweetElement = document.getElementById(tweetCssId);
-  // We find the sibling that has the vote that is closets, but higher than current vote.
-  // Traverse intil finding the place.
+  // We find the sibling that has the vote that is closets, but higher than
+  // current vote. Traverse intil finding the place.
   var previous = tweetElement
   var moveAfter, sameVote;
-  // Keep going up till find an element with a higher vote.
+  // Keep going up till find an element that has a higher vote above an element
+  // with lower vote.
   while (previous = previous.previousSibling) {
     var prevID = previous.getAttribute('id').substring(6);
     if (prevID in this.votesCache) {

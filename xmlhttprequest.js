@@ -67,7 +67,7 @@ XMLHttpRequest.prototype.send = function(data) {
     // This is a get/default, fetch paramaters.
     var offset = ('param_offset' in params) && parseInt(params['param_offset']) ? parseInt(params['param_offset']) : 0;
 
-    // local storage tracks created tweets so they persist page loads.
+    // Local storage tracks created tweets so they persist page loads.
     var tweets = localStorage.tweets ? JSON.parse(localStorage.tweets) : [];
     // Create new tweets if none exist for this page.
     if (!tweets || tweets.length < offset + 20) {
@@ -97,8 +97,10 @@ XMLHttpRequest.prototype.send = function(data) {
   }
 }
 
+/**
+ * Make a tweet between 1 and 150 characters.
+ */
 function tweeterFakeTweet() {
-  // Make a tweet between two and 150 characters.
   var length = Math.random() * 140 + 10;
   var words = [
     'a',
