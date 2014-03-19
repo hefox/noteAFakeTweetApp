@@ -12,7 +12,7 @@ The only library used is qunit. jQuery would be quite useful for cross browser
 and DOM manipulation but was not used as an additional challenge.
 
 Areas that could be improved on with more time:
-1) animationse
+1) animations
 2) Custom tweet object to have functions to retrieve selector, etc.
 3) support same tweet in two tweet listings (right now prevented due to id use)
 4) Add sorting.
